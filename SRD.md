@@ -50,13 +50,15 @@ The **Mzalendo-POS** will be a software solution offered as a Software-as-a-Serv
     - External interfaces: Potential integration with other business application 
 
 ## Success Criteria
-    - The **Mzalendo-POS** is successfully deployed and accessible to users
-    - Users can navigate the application easily and perform sales transactions efficiently
-    - Inventory management features enable accurante stockk control and ordering.
-    - Reporting and analytics provide insights for business decisions.
-    - The system meets all security and performance requirements
+
+- The **Mzalendo-POS** is successfully deployed and accessible to users
+- Users can navigate the application easily and perform sales transactions efficiently
+- Inventory management features enable accurante stockk control and ordering.
+- Reporting and analytics provide insights for business decisions.
+- The system meets all security and performance requirements
 
 ## Future Considerations
-    - Integration with online ordering and delivery platforms
-    - Implementation of self-checkout kiosks for faster customer service.
-    - Advanced features like employee scheduling and payroll management
+
+- Integration with online ordering and delivery platforms
+- Implementation of self-checkout kiosks for faster customer service.
+ - Advanced features like employee scheduling and payroll management
