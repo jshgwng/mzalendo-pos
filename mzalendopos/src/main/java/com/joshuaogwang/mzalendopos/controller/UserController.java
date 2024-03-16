@@ -5,21 +5,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.joshuaogwang.mzalendopos.entity.Role;
+import com.joshuaogwang.mzalendopos.entity.User;
 import com.joshuaogwang.mzalendopos.error.ErrorResponse;
-import com.joshuaogwang.mzalendopos.service.RoleService;
+import com.joshuaogwang.mzalendopos.service.UserService;
 
 @RestController
-@RequestMapping("/api/v1/role")
-public class RoleController {
+@RequestMapping("/api/v1/user")
+public class UserController {
     @Autowired
-    private RoleService roleService;
+    private UserService userService;
 
-    public RoleController(RoleService roleService) {
-        this.roleService = roleService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @ExceptionHandler(Exception.class)
@@ -27,8 +26,8 @@ public class RoleController {
         return new ErrorResponse(e.getMessage());
     }
 
-    @PostMapping("/save-role")
-    public Role saveRole(@RequestBody Role role, @RequestParam Long userId) {
-        return roleService.saveRole(role, userId);
+    @PostMapping("/save-user")
+    public User saveUser(@RequestBody User user) {
+        return userService.saveUser(user);
     }
 }

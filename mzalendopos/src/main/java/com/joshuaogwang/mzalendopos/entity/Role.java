@@ -13,6 +13,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+
 @Entity
 @Data
 @Table(name = "roles")
@@ -28,4 +29,10 @@ public class Role {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     private Set<User> users;
+
+    @Override
+    public String toString() {
+        return "{\"id\":\"" + id + "\",\"name\":\"" + name + "\",\"permissions\":\"" + permissions + "\",\"users\":\""
+                + users + "\"}";
+    }
 }

@@ -9,7 +9,7 @@ public interface RoleService {
 
     public Role getRoleById(Long id);
 
-    public Role saveRole(Role role);
+    public Role saveRole(Role role, Long userId);
 
     public Role updateRole(Role role);
 
