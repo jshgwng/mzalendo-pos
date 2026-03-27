@@ -1,17 +1,18 @@
 package com.joshuaogwang.mzalendopos.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.joshuaogwang.mzalendopos.entity.Role;
 
 public interface RoleService {
-    public List<Role> getAllRoles();
+    Page<Role> getAllRoles(Pageable pageable);
 
-    public Role getRoleById(Long id);
+    Role getRoleById(Long id);
 
-    public Role saveRole(Role role, Long userId);
+    Role saveRole(Role role, Long userId);
 
-    public Role updateRole(Role role);
+    Role updateRole(Long id, Role role);
 
-    public void deleteRole(Long id);
+    void deleteRole(Long id);
 }

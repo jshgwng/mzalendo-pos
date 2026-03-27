@@ -1,11 +1,9 @@
 package com.joshuaogwang.mzalendopos.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.CreatedDate;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +13,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -25,20 +24,16 @@ public class Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String entityName;
     private String entityId;
     private String action;
     private String oldData;
     private String newData;
-    @CreatedDate
-    private LocalDate timeStamp;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
-    private User user;
+    private LocalDateTime timeStamp;
 
-    @Override
-    public String toString() {
-        // create JSON object
-        return "{\"id\":\"" + id + "\",\"entityName\":\"" + entityName + "\",\"entityId\":\"" + entityId + "\",\"action\":\"" + action + "\",\"oldData\":\"" + oldData + "\",\"newData\":\"" + newData + "\",\"timeStamp\":\"" + timeStamp + "\",\"user\":\"" + user + "\"}";
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
+    @ToString.Exclude
+    private User user;
 }

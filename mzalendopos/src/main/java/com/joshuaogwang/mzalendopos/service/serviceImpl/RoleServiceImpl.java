@@ -1,13 +1,16 @@
 package com.joshuaogwang.mzalendopos.service.serviceImpl;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
-import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.joshuaogwang.mzalendopos.entity.Audit;
 import com.joshuaogwang.mzalendopos.entity.Role;
+import com.joshuaogwang.mzalendopos.entity.User;
 import com.joshuaogwang.mzalendopos.repository.RoleRepository;
 import com.joshuaogwang.mzalendopos.repository.UserRepository;
 import com.joshuaogwang.mzalendopos.service.AuditService;
@@ -21,7 +24,7 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired 
+    @Autowired
     private AuditService auditService;
 
     @Autowired
@@ -41,40 +44,51 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void deleteRole(Long id) {
-        // TODO Auto-generated method stub
-
+        if (!roleRepository.existsById(id)) {
+            throw new NoSuchElementException("Role not found with id: " + id);
+        }
+        roleRepository.deleteById(id);
     }
 
     @Override
-    public List<Role> getAllRoles() {
-        // TODO Auto-generated method stub
-        return null;
+    public Page<Role> getAllRoles(Pageable pageable) {
+        return roleRepository.findAll(pageable);
     }
 
     @Override
     public Role getRoleById(Long id) {
-        // TODO Auto-generated method stub
-        return null;
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Role not found with id: " + id));
     }
 
     @Override
     public Role saveRole(Role role, Long userId) {
         Role newRole = roleRepository.save(role);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
         Audit audit = new Audit();
         audit.setEntityName("Role");
         audit.setEntityId(newRole.getId().toString());
         audit.setAction("CREATE");
-        audit.setOldData("null");   
-        audit.setNewData(newRole.toString());   
-        audit.setUser(userRepository.findById(userId).get());
+        audit.setOldData("null");
+        audit.setNewData(newRole.toString());
+        audit.setTimeStamp(LocalDateTime.now());
+        audit.setUser(user);
         auditService.createAudit(audit);
+
         return newRole;
     }
 
     @Override
-    public Role updateRole(Role role) {
-        // TODO Auto-generated method stub
-        return null;
+    public Role updateRole(Long id, Role role) {
+        Role existing = roleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Role not found with id: " + id));
+        existing.setName(role.getName());
+        if (role.getPermissions() != null) {
+            existing.setPermissions(role.getPermissions());
+        }
+        return roleRepository.save(existing);
     }
-
 }
