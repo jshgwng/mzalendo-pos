@@ -302,8 +302,12 @@ public class AccountingServiceImpl implements AccountingService {
                     .build();
         }
 
-        String paymentMethod = sale.getPayment() != null
-                ? sale.getPayment().getMethod().name() : "CASH";
+        String paymentMethod = sale.getPayments() != null && !sale.getPayments().isEmpty()
+                ? sale.getPayments().stream()
+                        .map(p -> p.getMethod().name())
+                        .distinct()
+                        .collect(java.util.stream.Collectors.joining("/"))
+                : "CASH";
 
         return AccountingInvoiceRequest.builder()
                 .eventType(AccountingEventType.SALE_COMPLETED)

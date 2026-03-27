@@ -106,6 +106,20 @@ public class SaleController {
         return ResponseEntity.ok(saleService.checkout(id, request));
     }
 
+    @PostMapping("/{id}/hold")
+    public ResponseEntity<Sale> holdSale(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") double depositAmount) {
+        return ResponseEntity.ok(saleService.holdSale(id, depositAmount));
+    }
+
+    @PostMapping("/{id}/release")
+    public ResponseEntity<Sale> releaseSale(
+            @PathVariable Long id,
+            @Valid @RequestBody CheckoutRequest request) {
+        return ResponseEntity.ok(saleService.releaseSale(id, request));
+    }
+
     @PostMapping("/{id}/void")
     public ResponseEntity<Sale> voidSale(@PathVariable Long id) {
         return ResponseEntity.ok(saleService.voidSale(id));

@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -25,4 +26,9 @@ public class Customer {
 
     @Column(nullable = true)
     private String phoneNumber;
+
+    /** Linked credit account — null if customer does not have credit facility */
+    @jakarta.persistence.OneToOne(mappedBy = "customer", cascade = jakarta.persistence.CascadeType.ALL, fetch = jakarta.persistence.FetchType.LAZY)
+    @ToString.Exclude
+    private CustomerAccount creditAccount;
 }

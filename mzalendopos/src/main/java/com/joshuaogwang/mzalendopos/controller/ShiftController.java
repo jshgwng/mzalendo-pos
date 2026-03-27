@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.joshuaogwang.mzalendopos.dto.ShiftCloseRequest;
 import com.joshuaogwang.mzalendopos.dto.ShiftOpenRequest;
+import com.joshuaogwang.mzalendopos.dto.ZReportResponse;
 import com.joshuaogwang.mzalendopos.entity.Shift;
 import com.joshuaogwang.mzalendopos.service.ShiftService;
 
@@ -63,5 +64,10 @@ public class ShiftController {
             return ResponseEntity.ok(shiftService.getShiftsByCashier(cashierId, pageable));
         }
         return ResponseEntity.ok(shiftService.getAllShifts(pageable));
+    }
+
+    @GetMapping("/{id}/z-report")
+    public ResponseEntity<ZReportResponse> getZReport(@PathVariable Long id) {
+        return ResponseEntity.ok(shiftService.generateZReport(id));
     }
 }

@@ -2,7 +2,6 @@ package com.joshuaogwang.mzalendopos.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +13,7 @@ import com.joshuaogwang.mzalendopos.entity.PaymentMethod;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    Optional<Payment> findBySaleId(Long saleId);
+    List<Payment> findBySaleId(Long saleId);
 
     @Query("SELECT p FROM Payment p WHERE p.method = :method AND p.sale.cashier.id = :cashierId AND p.paidAt BETWEEN :from AND :to")
     List<Payment> findByCashierAndMethodAndDateRange(

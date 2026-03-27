@@ -29,6 +29,12 @@ public class SaleItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    /** Set when a specific product variant (size/color/etc.) was sold */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id", nullable = true)
+    @ToString.Exclude
+    private ProductVariant variant;
+
     @Column(nullable = false)
     private String productName;
 

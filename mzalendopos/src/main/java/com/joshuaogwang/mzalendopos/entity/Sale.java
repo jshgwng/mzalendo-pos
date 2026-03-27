@@ -80,9 +80,26 @@ public class Sale {
     @ToString.Exclude
     private List<SaleItem> items = new ArrayList<>();
 
-    @OneToOne(mappedBy = "sale", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private Payment payment;
+    private List<Payment> payments = new ArrayList<>();
+
+    // Layaway fields
+    @Column(nullable = false)
+    private double depositPaid = 0.0;
+
+    @Column(nullable = true)
+    private LocalDateTime heldAt;
+
+    // Promotion fields
+    @Column(nullable = false)
+    private double promotionDiscount = 0.0;
+
+    // Price list applied to this sale (null = default retail pricing)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "price_list_id", nullable = true)
+    @ToString.Exclude
+    private PriceList priceList;
 
     // EFRIS URA fields — populated after successful fiscal invoice submission
     @Column(nullable = true)

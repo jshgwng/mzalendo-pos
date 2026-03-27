@@ -24,6 +24,8 @@ public interface SaleService {
     Page<Sale> getAllSales(SaleStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable);
     Page<Sale> getSalesByCashier(Long cashierId, Pageable pageable);
     Sale checkout(Long saleId, CheckoutRequest request);
+    Sale holdSale(Long saleId, double depositAmount);
+    Sale releaseSale(Long saleId, CheckoutRequest request);
     Sale voidSale(Long saleId);
     ReceiptResponse getReceipt(Long saleId);
 }

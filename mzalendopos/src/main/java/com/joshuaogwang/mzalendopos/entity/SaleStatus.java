@@ -5,5 +5,7 @@ public enum SaleStatus {
     COMPLETED,
     VOIDED,
     RETURNED,
-    PARTIALLY_RETURNED
+    PARTIALLY_RETURNED,
+    /** Sale on hold (layaway) — items reserved, deposit optionally paid */
+    HOLD
 }

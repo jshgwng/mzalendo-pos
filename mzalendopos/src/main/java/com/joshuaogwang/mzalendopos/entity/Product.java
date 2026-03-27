@@ -52,4 +52,22 @@ public class Product {
 
     @Column(nullable = true)
     private String imageUrl;
+
+    // Reorder management
+    @Column(nullable = false)
+    private int reorderPoint = 0;
+
+    @Column(nullable = false)
+    private int reorderQuantity = 0;
+
+    @Column(nullable = false)
+    private boolean lowStockAlertEnabled = false;
+
+    /** True when this product uses ProductVariant records for stock/pricing */
+    @Column(nullable = false)
+    private boolean hasVariants = false;
+
+    /** Track batches/expiry dates (perishables, pharmaceuticals, etc.) */
+    @Column(nullable = false)
+    private boolean trackExpiry = false;
 }

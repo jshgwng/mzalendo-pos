@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.joshuaogwang.mzalendopos.dto.ShiftCloseRequest;
 import com.joshuaogwang.mzalendopos.dto.ShiftOpenRequest;
+import com.joshuaogwang.mzalendopos.dto.ZReportResponse;
 import com.joshuaogwang.mzalendopos.entity.Shift;
 
 public interface ShiftService {
@@ -14,4 +15,5 @@ public interface ShiftService {
     Shift getShiftById(Long id);
     Page<Shift> getAllShifts(Pageable pageable);
     Page<Shift> getShiftsByCashier(Long cashierId, Pageable pageable);
+    ZReportResponse generateZReport(Long shiftId);
 }

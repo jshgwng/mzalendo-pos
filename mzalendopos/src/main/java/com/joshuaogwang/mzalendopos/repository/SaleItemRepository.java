@@ -16,6 +16,8 @@ import com.joshuaogwang.mzalendopos.entity.SaleItem;
 public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
     List<SaleItem> findBySaleId(Long saleId);
     Optional<SaleItem> findBySaleIdAndProductId(Long saleId, Long productId);
+    Optional<SaleItem> findBySaleIdAndProductIdAndVariantId(Long saleId, Long productId, Long variantId);
+    Optional<SaleItem> findBySaleIdAndProductIdAndVariantIdIsNull(Long saleId, Long productId);
 
     @Query("SELECT si.productName, SUM(si.quantity), SUM(si.lineTotal) " +
            "FROM SaleItem si JOIN si.sale s " +
