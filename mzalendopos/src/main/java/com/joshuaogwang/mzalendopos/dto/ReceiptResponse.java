@@ -26,6 +26,11 @@ public class ReceiptResponse {
     private double amountPaid;
     private double changeGiven;
 
+    // EFRIS URA fiscal receipt fields (null when EFRIS is disabled or pending)
+    private String fiscalReceiptNumber;
+    private String efrisQrCode;
+    private String efrisAntifakeCode;
+
     @Data
     @Builder
     public static class ReceiptItem {

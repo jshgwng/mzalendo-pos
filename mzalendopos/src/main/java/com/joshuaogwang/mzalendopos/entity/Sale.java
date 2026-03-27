@@ -83,4 +83,14 @@ public class Sale {
     @OneToOne(mappedBy = "sale", cascade = CascadeType.ALL)
     @ToString.Exclude
     private Payment payment;
+
+    // EFRIS URA fields — populated after successful fiscal invoice submission
+    @Column(nullable = true)
+    private String fiscalReceiptNumber;
+
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String efrisQrCode;
+
+    @Column(nullable = true)
+    private String efrisAntifakeCode;
 }

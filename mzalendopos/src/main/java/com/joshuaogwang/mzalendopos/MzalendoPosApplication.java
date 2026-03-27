@@ -2,8 +2,14 @@ package com.joshuaogwang.mzalendopos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import com.joshuaogwang.mzalendopos.config.EfrisProperties;
 
 @SpringBootApplication
+@EnableScheduling
+@EnableConfigurationProperties(EfrisProperties.class)
 public class MzalendoPosApplication {
 
 	public static void main(String[] args) {

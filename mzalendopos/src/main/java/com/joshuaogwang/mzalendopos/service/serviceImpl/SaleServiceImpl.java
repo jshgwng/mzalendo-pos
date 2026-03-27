@@ -24,12 +24,15 @@ import com.joshuaogwang.mzalendopos.entity.Sale;
 import com.joshuaogwang.mzalendopos.entity.SaleItem;
 import com.joshuaogwang.mzalendopos.entity.SaleStatus;
 import com.joshuaogwang.mzalendopos.entity.User;
+import com.joshuaogwang.mzalendopos.entity.EfrisSubmission;
+import com.joshuaogwang.mzalendopos.entity.EfrisSubmissionStatus;
 import com.joshuaogwang.mzalendopos.repository.CustomerRepository;
 import com.joshuaogwang.mzalendopos.repository.PaymentRepository;
 import com.joshuaogwang.mzalendopos.repository.ProductRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleItemRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleRepository;
 import com.joshuaogwang.mzalendopos.repository.UserRepository;
+import com.joshuaogwang.mzalendopos.service.EfrisService;
 import com.joshuaogwang.mzalendopos.service.SaleService;
 
 @Service
@@ -52,6 +55,9 @@ public class SaleServiceImpl implements SaleService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private EfrisService efrisService;
 
     @Override
     @Transactional
@@ -226,7 +232,22 @@ public class SaleServiceImpl implements SaleService {
 
         sale.setStatus(SaleStatus.COMPLETED);
         sale.setCompletedAt(LocalDateTime.now());
-        return saleRepository.save(sale);
+        Sale completed = saleRepository.save(sale);
+
+        // Submit fiscal invoice to URA EFRIS (non-blocking on failure)
+        try {
+            EfrisSubmission submission = efrisService.submitInvoice(completed);
+            if (submission.getStatus() == EfrisSubmissionStatus.SUBMITTED) {
+                completed.setFiscalReceiptNumber(submission.getFiscalReceiptNumber());
+                completed.setEfrisQrCode(submission.getQrCode());
+                completed.setEfrisAntifakeCode(submission.getAntifakeCode());
+                completed = saleRepository.save(completed);
+            }
+        } catch (Exception ex) {
+            // EFRIS failure must never roll back a completed payment
+        }
+
+        return completed;
     }
 
     @Override
@@ -291,6 +312,9 @@ public class SaleServiceImpl implements SaleService {
                 .paymentMethod(payment.getMethod())
                 .amountPaid(payment.getAmountPaid())
                 .changeGiven(payment.getChangeGiven())
+                .fiscalReceiptNumber(sale.getFiscalReceiptNumber())
+                .efrisQrCode(sale.getEfrisQrCode())
+                .efrisAntifakeCode(sale.getEfrisAntifakeCode())
                 .build();
     }
 
