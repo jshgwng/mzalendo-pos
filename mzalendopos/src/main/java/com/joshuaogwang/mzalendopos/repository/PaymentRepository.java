@@ -1,0 +1,13 @@
+package com.joshuaogwang.mzalendopos.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.joshuaogwang.mzalendopos.entity.Payment;
+
+@Repository
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    Optional<Payment> findBySaleId(Long saleId);
+}

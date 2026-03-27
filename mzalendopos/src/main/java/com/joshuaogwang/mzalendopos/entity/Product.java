@@ -25,6 +25,9 @@ public class Product {
     @NotBlank(message = "Product name is required")
     private String name;
 
+    @Column(unique = true, nullable = true)
+    private String barcode;
+
     @Column(length = 1000, nullable = true)
     private String description;
 
@@ -43,6 +46,9 @@ public class Product {
 
     @Min(value = 0, message = "Stock level must be non-negative")
     private int stockLevel;
+
+    @Column(nullable = false)
+    private double taxRate = 0.0;
 
     @Column(nullable = true)
     private String imageUrl;
