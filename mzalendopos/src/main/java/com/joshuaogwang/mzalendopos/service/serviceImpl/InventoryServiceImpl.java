@@ -17,6 +17,7 @@ import com.joshuaogwang.mzalendopos.entity.User;
 import com.joshuaogwang.mzalendopos.repository.ProductRepository;
 import com.joshuaogwang.mzalendopos.repository.StockAdjustmentRepository;
 import com.joshuaogwang.mzalendopos.repository.UserRepository;
+import com.joshuaogwang.mzalendopos.service.AccountingService;
 import com.joshuaogwang.mzalendopos.service.InventoryService;
 
 @Service
@@ -30,6 +31,9 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AccountingService accountingService;
 
     @Override
     @Transactional
@@ -66,7 +70,16 @@ public class InventoryServiceImpl implements InventoryService {
         adjustment.setReason(request.getReason());
         adjustment.setAdjustedBy(user);
         adjustment.setAdjustedAt(LocalDateTime.now());
-        return adjustmentRepository.save(adjustment);
+        StockAdjustment saved = adjustmentRepository.save(adjustment);
+
+        // Sync inventory adjustment to accounting tools (non-blocking)
+        try {
+            accountingService.syncStockAdjustment(saved);
+        } catch (Exception ex) {
+            // Accounting sync failure must never roll back a stock adjustment
+        }
+
+        return saved;
     }
 
     @Override

@@ -32,6 +32,7 @@ import com.joshuaogwang.mzalendopos.repository.ProductRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleItemRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleRepository;
 import com.joshuaogwang.mzalendopos.repository.UserRepository;
+import com.joshuaogwang.mzalendopos.service.AccountingService;
 import com.joshuaogwang.mzalendopos.service.EfrisService;
 import com.joshuaogwang.mzalendopos.service.SaleService;
 
@@ -58,6 +59,9 @@ public class SaleServiceImpl implements SaleService {
 
     @Autowired
     private EfrisService efrisService;
+
+    @Autowired
+    private AccountingService accountingService;
 
     @Override
     @Transactional
@@ -245,6 +249,13 @@ public class SaleServiceImpl implements SaleService {
             }
         } catch (Exception ex) {
             // EFRIS failure must never roll back a completed payment
+        }
+
+        // Sync to accounting tools (non-blocking on failure)
+        try {
+            accountingService.syncSale(completed);
+        } catch (Exception ex) {
+            // Accounting sync failure must never roll back a completed sale
         }
 
         return completed;

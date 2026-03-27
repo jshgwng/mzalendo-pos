@@ -5,11 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.joshuaogwang.mzalendopos.config.AccountingProperties;
 import com.joshuaogwang.mzalendopos.config.EfrisProperties;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties(EfrisProperties.class)
+@EnableConfigurationProperties({EfrisProperties.class, AccountingProperties.class})
 public class MzalendoPosApplication {
 
 	public static void main(String[] args) {

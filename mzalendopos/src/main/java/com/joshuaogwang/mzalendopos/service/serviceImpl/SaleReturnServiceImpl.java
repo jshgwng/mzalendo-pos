@@ -22,6 +22,7 @@ import com.joshuaogwang.mzalendopos.repository.SaleItemRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleRepository;
 import com.joshuaogwang.mzalendopos.repository.SaleReturnRepository;
 import com.joshuaogwang.mzalendopos.repository.UserRepository;
+import com.joshuaogwang.mzalendopos.service.AccountingService;
 import com.joshuaogwang.mzalendopos.service.SaleReturnService;
 
 @Service
@@ -41,6 +42,9 @@ public class SaleReturnServiceImpl implements SaleReturnService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AccountingService accountingService;
 
     @Override
     @Transactional
@@ -115,7 +119,16 @@ public class SaleReturnServiceImpl implements SaleReturnService {
 
         returnItems.forEach(ri -> ri.setSaleReturn(saved));
         saved.setItems(returnItems);
-        return returnRepository.save(saved);
+        SaleReturn finalReturn = returnRepository.save(saved);
+
+        // Sync credit note to accounting tools (non-blocking)
+        try {
+            accountingService.syncReturn(finalReturn);
+        } catch (Exception ex) {
+            // Accounting sync failure must never roll back a processed return
+        }
+
+        return finalReturn;
     }
 
     @Override
