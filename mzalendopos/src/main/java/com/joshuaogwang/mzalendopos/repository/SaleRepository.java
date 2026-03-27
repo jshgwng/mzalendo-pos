@@ -16,5 +16,8 @@ import com.joshuaogwang.mzalendopos.entity.SaleStatus;
 public interface SaleRepository extends JpaRepository<Sale, Long> {
     Optional<Sale> findBySaleNumber(String saleNumber);
     Page<Sale> findByCashierId(Long cashierId, Pageable pageable);
+    Page<Sale> findByStatus(SaleStatus status, Pageable pageable);
+    Page<Sale> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+    Page<Sale> findByStatusAndCreatedAtBetween(SaleStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable);
     List<Sale> findByStatusAndCreatedAtBetween(SaleStatus status, LocalDateTime start, LocalDateTime end);
 }

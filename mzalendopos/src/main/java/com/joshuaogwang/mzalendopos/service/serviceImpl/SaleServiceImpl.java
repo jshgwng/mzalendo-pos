@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.joshuaogwang.mzalendopos.dto.CheckoutRequest;
+import com.joshuaogwang.mzalendopos.dto.DiscountRequest;
 import com.joshuaogwang.mzalendopos.dto.ReceiptResponse;
 import com.joshuaogwang.mzalendopos.dto.SaleItemRequest;
 import com.joshuaogwang.mzalendopos.entity.Customer;
+import com.joshuaogwang.mzalendopos.entity.DiscountType;
 import com.joshuaogwang.mzalendopos.entity.Payment;
 import com.joshuaogwang.mzalendopos.entity.Product;
 import com.joshuaogwang.mzalendopos.entity.Sale;
@@ -73,7 +75,6 @@ public class SaleServiceImpl implements SaleService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + request.getProductId()));
 
-        // Merge with existing line item for the same product
         SaleItem item = saleItemRepository.findBySaleIdAndProductId(saleId, product.getId())
                 .orElse(null);
 
@@ -127,9 +128,49 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional
+    public Sale applyDiscount(Long saleId, DiscountRequest request) {
+        Sale sale = getOpenSale(saleId);
+
+        if (request.getDiscountType() == DiscountType.PERCENTAGE && request.getDiscountValue() > 100) {
+            throw new IllegalArgumentException("Percentage discount cannot exceed 100%");
+        }
+
+        sale.setDiscountType(request.getDiscountType());
+        sale.setDiscountValue(request.getDiscountValue());
+        recalculateSaleTotals(sale);
+        return saleRepository.findById(saleId).orElseThrow();
+    }
+
+    @Override
+    @Transactional
+    public Sale removeDiscount(Long saleId) {
+        Sale sale = getOpenSale(saleId);
+        sale.setDiscountType(null);
+        sale.setDiscountValue(0.0);
+        sale.setDiscountAmount(0.0);
+        recalculateSaleTotals(sale);
+        return saleRepository.findById(saleId).orElseThrow();
+    }
+
+    @Override
     public Sale getSaleById(Long id) {
         return saleRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Sale not found with id: " + id));
+    }
+
+    @Override
+    public Page<Sale> getAllSales(SaleStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        if (status != null && from != null && to != null) {
+            return saleRepository.findByStatusAndCreatedAtBetween(status, from, to, pageable);
+        }
+        if (status != null) {
+            return saleRepository.findByStatus(status, pageable);
+        }
+        if (from != null && to != null) {
+            return saleRepository.findByCreatedAtBetween(from, to, pageable);
+        }
+        return saleRepository.findAll(pageable);
     }
 
     @Override
@@ -146,51 +187,43 @@ public class SaleServiceImpl implements SaleService {
             throw new IllegalArgumentException("Cannot checkout an empty sale");
         }
 
-        // Validate stock availability for all items
         for (SaleItem item : sale.getItems()) {
             Product product = item.getProduct();
             if (product.getStockLevel() < item.getQuantity()) {
                 throw new IllegalArgumentException(
                         "Insufficient stock for product: " + product.getName() +
                         ". Available: " + product.getStockLevel() +
-                        ", Requested: " + item.getQuantity()
-                );
+                        ", Requested: " + item.getQuantity());
             }
         }
 
-        // Validate payment is enough
         if (request.getAmountPaid() < sale.getTotalAmount()) {
             throw new IllegalArgumentException(
                     String.format("Amount paid (%.2f) is less than total (%.2f)",
-                            request.getAmountPaid(), sale.getTotalAmount())
-            );
+                            request.getAmountPaid(), sale.getTotalAmount()));
         }
 
-        // Attach optional customer
         if (request.getCustomerId() != null) {
             Customer customer = customerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new NoSuchElementException("Customer not found with id: " + request.getCustomerId()));
             sale.setCustomer(customer);
         }
 
-        // Deduct stock
         for (SaleItem item : sale.getItems()) {
             Product product = item.getProduct();
             product.setStockLevel(product.getStockLevel() - item.getQuantity());
             productRepository.save(product);
         }
 
-        // Record payment
         double change = request.getAmountPaid() - sale.getTotalAmount();
         Payment payment = new Payment();
         payment.setSale(sale);
         payment.setMethod(request.getPaymentMethod());
         payment.setAmountPaid(request.getAmountPaid());
-        payment.setChangeGiven(change);
+        payment.setChangeGiven(Math.round(change * 100.0) / 100.0);
         payment.setPaidAt(LocalDateTime.now());
         paymentRepository.save(payment);
 
-        // Complete sale
         sale.setStatus(SaleStatus.COMPLETED);
         sale.setCompletedAt(LocalDateTime.now());
         return saleRepository.save(sale);
@@ -206,7 +239,6 @@ public class SaleServiceImpl implements SaleService {
             throw new IllegalArgumentException("Sale is already voided");
         }
 
-        // Restore stock if the sale was completed
         if (sale.getStatus() == SaleStatus.COMPLETED) {
             for (SaleItem item : sale.getItems()) {
                 Product product = item.getProduct();
@@ -252,6 +284,9 @@ public class SaleServiceImpl implements SaleService {
                 .items(receiptItems)
                 .subtotal(sale.getSubtotal())
                 .taxAmount(sale.getTaxAmount())
+                .discountType(sale.getDiscountType())
+                .discountValue(sale.getDiscountValue())
+                .discountAmount(sale.getDiscountAmount())
                 .totalAmount(sale.getTotalAmount())
                 .paymentMethod(payment.getMethod())
                 .amountPaid(payment.getAmountPaid())
@@ -275,11 +310,19 @@ public class SaleServiceImpl implements SaleService {
         double taxAmount = items.stream()
                 .mapToDouble(item -> item.getLineTotal() * (item.getTaxRate() / 100.0))
                 .sum();
-        double total = subtotal + taxAmount;
+
+        double discountAmount = 0.0;
+        if (sale.getDiscountType() != null && sale.getDiscountValue() > 0) {
+            double base = subtotal + taxAmount;
+            discountAmount = sale.getDiscountType() == DiscountType.PERCENTAGE
+                    ? base * (sale.getDiscountValue() / 100.0)
+                    : Math.min(sale.getDiscountValue(), base);
+        }
 
         sale.setSubtotal(round(subtotal));
         sale.setTaxAmount(round(taxAmount));
-        sale.setTotalAmount(round(total));
+        sale.setDiscountAmount(round(discountAmount));
+        sale.setTotalAmount(round(subtotal + taxAmount - discountAmount));
         saleRepository.save(sale);
     }
 

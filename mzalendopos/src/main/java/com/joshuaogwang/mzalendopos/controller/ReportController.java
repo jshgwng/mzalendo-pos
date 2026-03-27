@@ -1,6 +1,7 @@
 package com.joshuaogwang.mzalendopos.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.joshuaogwang.mzalendopos.dto.DailySummaryResponse;
+import com.joshuaogwang.mzalendopos.dto.TopProductResponse;
 import com.joshuaogwang.mzalendopos.service.ReportService;
 
 @RestController
@@ -23,7 +25,23 @@ public class ReportController {
     @GetMapping("/daily-summary")
     public ResponseEntity<DailySummaryResponse> getDailySummary(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        LocalDate targetDate = date != null ? date : LocalDate.now();
-        return ResponseEntity.ok(reportService.getDailySummary(targetDate));
+        return ResponseEntity.ok(reportService.getDailySummary(date != null ? date : LocalDate.now()));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<DailySummaryResponse> getRangeSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(reportService.getRangeSummary(from, to));
+    }
+
+    @GetMapping("/top-products")
+    public ResponseEntity<List<TopProductResponse>> getTopProducts(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "10") int limit) {
+        LocalDate start = from != null ? from : LocalDate.now().withDayOfMonth(1);
+        LocalDate end = to != null ? to : LocalDate.now();
+        return ResponseEntity.ok(reportService.getTopProducts(start, end, limit));
     }
 }

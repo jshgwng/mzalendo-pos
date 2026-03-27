@@ -11,5 +11,6 @@ public class DailySummaryResponse {
     private int totalTransactions;
     private double totalRevenue;
     private double totalTax;
+    private double totalDiscount;
     private double totalNet;
 }

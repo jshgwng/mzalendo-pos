@@ -42,6 +42,11 @@ public class Sale {
     @ToString.Exclude
     private Customer customer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shift_id", nullable = true)
+    @ToString.Exclude
+    private Shift shift;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SaleStatus status = SaleStatus.OPEN;
@@ -51,6 +56,16 @@ public class Sale {
 
     @Column(nullable = false)
     private double taxAmount = 0.0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private DiscountType discountType;
+
+    @Column(nullable = false)
+    private double discountValue = 0.0;
+
+    @Column(nullable = false)
+    private double discountAmount = 0.0;
 
     @Column(nullable = false)
     private double totalAmount = 0.0;

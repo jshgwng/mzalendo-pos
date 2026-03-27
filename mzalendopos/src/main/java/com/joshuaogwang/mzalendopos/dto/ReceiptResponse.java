@@ -3,6 +3,7 @@ package com.joshuaogwang.mzalendopos.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.joshuaogwang.mzalendopos.entity.DiscountType;
 import com.joshuaogwang.mzalendopos.entity.PaymentMethod;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,9 @@ public class ReceiptResponse {
     private List<ReceiptItem> items;
     private double subtotal;
     private double taxAmount;
+    private DiscountType discountType;
+    private double discountValue;
+    private double discountAmount;
     private double totalAmount;
     private PaymentMethod paymentMethod;
     private double amountPaid;
